@@ -1,36 +1,38 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Engineering OS
 
-## Getting Started
+A Next.js App Router + Tailwind + Supabase university workspace built from [the Engineering OS Figma](https://www.figma.com/design/LHiWzaQVVsoC7spijl8k7X).
 
-First, run the development server:
+## Local development
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
+Requires Node.js 22+ and npm. Copy `.env.example` to `.env.local`, set the Supabase URL and publishable key, then run `npm ci`, `npm run dev`.
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+`npm run build` checks the production build. `npm run lint` checks the source. `npm run test:unit` verifies date boundaries, timetable warnings and planning. Browser tests use two disposable accounts supplied in `../work/verification/accounts.json` (never commit credentials). `npm run test:e2e` runs against localhost; set `TEST_URL` to test a deployment. Tests use the installed Chrome browser. The end-to-end test clears only the first QA account's semesters; never use a real user's credentials.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## Data and setup
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+Supabase project: `ugfnhcnplyfkxfbkemui`. `supabase/schema.sql` is the initial schema applied as `engineering_os_initial`. All tables enable RLS. Owner IDs and semester IDs are included in composite foreign keys; a user cannot link their data to another user's courses or semesters. Database constraints enforce valid dates, times, priorities and GPA ranges. RPC functions run as the caller, not as a privileged owner.
 
-## Learn More
+Sign up, confirm your email, create a semester, and choose **Import NUM courses + timetable**. This atomically imports six 3-credit courses and 13 meetings. Monday, Saturday and Sunday start without classes. Each meeting is editable data. Assignments, exams, projects and academic metrics start empty. Semester dates are optional because they were not provided.
 
-To learn more about Next.js, take a look at the following resources:
+The seed comes from Figma's corrected Timetable frame `3:260`; older Classes summary labels incorrectly mention Saturday and are intentionally not copied. Priorities: EENG202 Electronics, MATH101 Calculus, PHYS101 Physics, then Python and the remaining subjects.
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## Authentication
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+Email/password auth uses Supabase, with PKCE confirmation and password-recovery callbacks. Configure Site URL to the production origin and allow `<origin>/auth/callback` plus `<origin>/auth/callback?next=recovery`. The browser refreshes sessions through `@supabase/ssr`; every data request is authorized by Supabase RLS. There is no privileged database key in the app.
 
-## Deploy on Vercel
+Supabase's built-in email provider is rate-limited and restricts recipients. A custom SMTP provider is required for unrestricted public signups. The user's own organization email can be used with the default provider. Do not disable email confirmation as a workaround.
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+## Product behavior
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+- Responsive Today, Classes, Timetable, Assignments, Exams, Study, Projects, Progress and Semesters.
+- All date calculations use Asia/Ulaanbaatar; recurring classes obey semester date boundaries.
+- Full CRUD, required fields, end-after-start validation, delete confirmation, duplicate prevention, explicit conflict overrides, and visible sync/error feedback.
+- Course + multiple weekly meetings save atomically. Drag a timetable block to another day to open a reviewable edit; time and room are set in that editor.
+- Overdue work remains until completed. Past exams display in the archive filter. Manual GPA and attendance are optional and never inferred.
+- Archived semesters are read-only until reactivated. Deleting a semester or course cascades to linked records, as the confirmation dialog explains.
+- The hybrid planner is deterministic scheduling, not a generative AI service. It ranks priorities and deadlines, finds free time from 10:00–20:00 for the next seven days, reserves exam preparation time, and gives longer blocks on class-free Mondays and Saturdays. Accept, edit, move, skip or complete sessions. Regeneration replaces only unaccepted suggestions; it preserves other sessions.
+- If a deadline or timetable changes, use Regenerate plan to recalculate suggestions.
+
+## Design
+
+Desktop sidebar 248px; content padding 44px; system SF Pro font stack; 16px cards; Figma neutral surfaces and blue accent. Exported Figma navigation assets are committed locally. Secondary text and colored timetable labels use darker foregrounds for readable contrast. Mobile has a bottom navigation, single-day timetable tabs and full-screen forms. The seventh day is included so future Sunday classes can be edited without disappearing.

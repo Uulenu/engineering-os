@@ -4,7 +4,7 @@ A Next.js App Router + Tailwind + Supabase university workspace built from [the 
 
 ## Local development
 
-Requires Node.js 22+ and npm. Copy `.env.example` to `.env.local`, set the Supabase URL and publishable key, then run `npm ci`, `npm run dev`.
+Requires Node.js 22+ and npm. The current deployment has public Supabase defaults in `src/lib/public-config.ts`; these are browser-visible settings, not administrative credentials. Copy `.env.example` to `.env.local`, set the Supabase URL and publishable key, then run `npm ci`, `npm run dev`.
 
 `npm run build` checks the production build. `npm run lint` checks the source. `npm run test:unit` verifies date boundaries, timetable warnings and planning. Browser tests use two disposable accounts supplied in `../work/verification/accounts.json` (never commit credentials). `npm run test:e2e` runs against localhost; set `TEST_URL` to test a deployment. Tests use the installed Chrome browser. The end-to-end test clears only the first QA account's semesters; never use a real user's credentials.
 

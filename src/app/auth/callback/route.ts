@@ -1,3 +1,4 @@
+import { supabaseUrl, supabasePublishableKey } from "@/lib/public-config";
 import { createServerClient } from "@supabase/ssr";
 import { NextRequest, NextResponse } from "next/server";
 export async function GET(request: NextRequest) {
@@ -8,19 +9,15 @@ export async function GET(request: NextRequest) {
   const response = NextResponse.redirect(new URL(destination, url.origin));
   response.headers.set("Cache-Control", "private, no-store");
   if (code) {
-    const supabase = createServerClient(
-      process.env.NEXT_PUBLIC_SUPABASE_URL!,
-      process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY!,
-      {
-        cookies: {
-          getAll: () => request.cookies.getAll(),
-          setAll: (items) =>
-            items.forEach(({ name, value, options }) =>
-              response.cookies.set(name, value, options),
-            ),
-        },
+    const supabase = createServerClient(supabaseUrl, supabasePublishableKey, {
+      cookies: {
+        getAll: () => request.cookies.getAll(),
+        setAll: (items) =>
+          items.forEach(({ name, value, options }) =>
+            response.cookies.set(name, value, options),
+          ),
       },
-    );
+    });
     const { error } = await supabase.auth.exchangeCodeForSession(code);
     if (!error) return response;
   }

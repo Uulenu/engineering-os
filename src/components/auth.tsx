@@ -90,7 +90,7 @@ export default function Auth({
     <main className="auth-layout">
       <section className="auth-intro">
         <Link href="/" className="brand">
-          <span className="brand-mark">S</span>Suralta
+          <span className="brand-mark" aria-hidden="true" />Suralta
         </Link>
         <h1>
           Your semester.

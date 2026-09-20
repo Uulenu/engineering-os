@@ -558,7 +558,7 @@ export default function Workspace() {
   if (!ready)
     return (
       <main className="loading-screen">
-        <span className="brand-mark">S</span>
+        <span className="brand-mark" aria-hidden="true" />
         <p>Opening Suralta…</p>
       </main>
     );
@@ -596,7 +596,7 @@ export default function Workspace() {
       </a>
       <aside className="sidebar">
         <div className="brand">
-          <span className="brand-mark">S</span>Suralta
+          <span className="brand-mark" aria-hidden="true" />Suralta
         </div>
         <nav aria-label="Main navigation">
           {destinations

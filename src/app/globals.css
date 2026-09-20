@@ -2246,5 +2246,7 @@ fieldset .text-button {
 
 /* Shared campus palette for native controls and selected mobile navigation. */
 input[type="checkbox"], input[type="radio"], progress { accent-color: var(--accent); }
-.bottom-nav button.selected { background: var(--lime); border-radius: 10px; color: var(--foreground); }
+.bottom-nav button.active { background: var(--lime); border-radius: 10px; color: var(--foreground); }
 .day-column.is-today { background: #f7f8ef; }
+
+.sidebar-bottom > .text-button { display: block; margin-top: 10px; }

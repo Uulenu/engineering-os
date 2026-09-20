@@ -16,7 +16,7 @@ const api = () =>
     env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY,
     { auth: { persistSession: false, autoRefreshToken: false } },
   );
-test("real account: onboarding, NUM seed, CRUD, planner, responsive, persistence", async ({
+test("real account: onboarding, personal timetable upload, CRUD, planner, responsive, persistence", async ({
   page,
 }) => {
   const errors: string[] = [];
@@ -24,7 +24,7 @@ test("real account: onboarding, NUM seed, CRUD, planner, responsive, persistence
   const c = api();
   await c.auth.signInWithPassword(accounts[0]);
   await c.from("semesters").delete().eq("user_id", accounts[0].id);
-  await page.goto("/");
+  await page.goto("/app");
   await page.getByLabel("Email", { exact: true }).fill(accounts[0].email);
   await page.getByLabel("Password", { exact: true }).fill(accounts[0].password);
   await page.getByRole("button", { name: "Sign in", exact: true }).click();
@@ -35,25 +35,29 @@ test("real account: onboarding, NUM seed, CRUD, planner, responsive, persistence
   await page.getByRole("button", { name: "Save changes", exact: true }).click();
   await page
     .getByRole("button", {
-      name: "Import NUM courses + timetable",
+      name: "Upload timetable",
       exact: true,
     })
     .click();
+  await page.getByLabel("Timetable files").setInputFiles({name:"my-timetable.csv",mimeType:"text/csv",buffer:Buffer.from("code,name,credits,priority,day,start_time,end_time,room,type\nART101,Visual communication,3,3,Monday,09:00,10:30,Studio,Lecture\nMED101,Human anatomy,4,1,Thursday,12:40,14:10,Lab A,Lab\nMED101,Human anatomy,4,1,Saturday,09:00,10:30,Lab A,Seminar\nHIST101,Modern history,3,2,Tuesday,11:00,12:30,204,Lecture\n")});
+  await expect(page.getByLabel("Course name 1")).toHaveValue("Visual communication");
+  await page.getByRole("checkbox",{name:/I checked/}).check();
+  await page.getByRole("button",{name:"Import 3 courses",exact:true}).click();
   await expect(page.getByText("Review your weekly plan")).toBeVisible();
   await page.getByRole("button", { name: "Finish setup" }).click();
   const nav = page.getByRole("navigation", { name: "Main navigation" });
   await nav.getByRole("button", { name: "Classes", exact: true }).click();
   await expect(
-    page.getByText("Биеийн тамир (Сагсан бөмбөг)", { exact: true }),
+    page.getByText("Visual communication", { exact: true }).first(),
   ).toBeVisible();
   const { data: meetings } = await c.from("class_meetings").select("*");
-  expect(meetings).toHaveLength(13);
-  expect(meetings?.some((m) => m.day === 1 || m.day === 6)).toBe(false);
+  expect(meetings).toHaveLength(4);
+  expect(meetings?.some((m) => m.day === 1 || m.day === 6)).toBe(true);
   await page.getByRole("button", { name: "Timetable", exact: true }).click();
   await expect(
     page
       .locator(".day-column")
-      .filter({ has: page.getByRole("heading", { name: /Saturday/ }) })
+      .filter({ has: page.getByRole("heading", { name: /Sunday/ }) })
       .getByText("Free day"),
   ).toBeVisible();
   await page
@@ -63,7 +67,7 @@ test("real account: onboarding, NUM seed, CRUD, planner, responsive, persistence
   await page
     .getByRole("dialog")
     .getByLabel("Course", { exact: false })
-    .selectOption({ label: "EENG202 · Электроникийн үндэс" });
+    .selectOption({ label: "MED101 · Human anatomy" });
   await page
     .getByRole("dialog")
     .getByLabel("Day", { exact: false })
@@ -89,7 +93,7 @@ test("real account: onboarding, NUM seed, CRUD, planner, responsive, persistence
   await page
     .getByRole("dialog")
     .getByLabel("Course", { exact: false })
-    .selectOption({ label: "EENG202 · Электроникийн үндэс" });
+    .selectOption({ label: "MED101 · Human anatomy" });
   await page.getByRole("dialog").getByLabel("Due date").fill("2026-09-01");
   await page.getByRole("button", { name: "Save changes" }).click();
   await expect(
@@ -111,6 +115,8 @@ test("real account: onboarding, NUM seed, CRUD, planner, responsive, persistence
     .getByLabel("Title")
     .fill("QA edited worksheet");
   await page.getByRole("button", { name: "Save changes" }).click();
+  await expect(page.getByRole("dialog")).toHaveCount(0);
+  await expect(page.getByText("QA edited worksheet", { exact: true })).toBeVisible();
   await page.reload();
   await expect(
     page.getByText("QA edited worksheet", { exact: true }),
@@ -124,7 +130,7 @@ test("real account: onboarding, NUM seed, CRUD, planner, responsive, persistence
   await page
     .getByRole("dialog")
     .getByLabel("Course")
-    .selectOption({ label: "PHYS101 · Физик" });
+    .selectOption({ label: "HIST101 · Modern history" });
   await page
     .getByRole("dialog")
     .getByLabel("Date", { exact: false })
@@ -229,7 +235,7 @@ test("real account: onboarding, NUM seed, CRUD, planner, responsive, persistence
   const mobile = page.getByRole("navigation", { name: "Mobile navigation" });
   await mobile.getByRole("button", { name: "Classes", exact: true }).click();
   await page.getByRole("button", { name: "Timetable", exact: true }).click();
-  await page.getByRole("tab", { name: "Sat", exact: true }).click();
+  await page.getByRole("tab", { name: "Sun", exact: true }).click();
   await expect(page.locator(".day-active").getByText("Free day")).toBeVisible();
   expect(
     await page.evaluate(

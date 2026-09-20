@@ -21,6 +21,8 @@ import {
 } from "@/lib/model";
 import { nouns } from "@/lib/forms";
 import Auth from "./auth";
+import TimetableImport from "./timetable-import";
+import ProfileEditor from "./profile-editor";
 import Editor from "./editor";
 import Modal from "./modal";
 const destinations = [
@@ -45,15 +47,15 @@ const viewTable: Partial<Record<View, Table>> = {
   Timetable: "class_meetings",
 };
 const descriptions: Record<View, string> = {
-  Today: "Your real NUM schedule",
+  Today: "Your day, at a glance",
   Classes: "Your courses, connected to the rest of your week.",
   Assignments: "Add real deadlines as your instructors give them.",
   Exams: "Add dates as soon as your instructors announce them.",
   Study: "Hybrid planner · suggested sessions + manual control",
-  Projects: "Keep university and personal engineering projects in one place.",
+  Projects: "Keep university and personal projects in one place.",
   Progress: "A simple view of the data you actually track.",
   Semesters: "A fresh start, with your previous work kept safe.",
-  Timetable: "Your actual NUM weekly class plan",
+  Timetable: "Your weekly class plan",
 };
 function Card({
   title,
@@ -135,6 +137,8 @@ export default function Workspace() {
   const [deleting, setDeleting] = useState<{ table: Table; row: Row } | null>(
     null,
   );
+  const [importing, setImporting] = useState(false);
+  const [editingProfile, setEditingProfile] = useState(false);
   const [quick, setQuick] = useState(false);
   const [more, setMore] = useState(false);
   const [now, setNow] = useState(clock());
@@ -420,13 +424,6 @@ export default function Workspace() {
       setBusy(false);
     }
   }
-  async function importNum() {
-    await run(async () => {
-      const { error } = await client.rpc("seed_num", { sid: semesterId });
-      if (error) throw error;
-      setOnboarding(3);
-    }, "Imported 6 NUM courses and 13 weekly meetings");
-  }
   async function generate() {
     if (!semester) return;
     await run(async () => {
@@ -561,8 +558,8 @@ export default function Workspace() {
   if (!ready)
     return (
       <main className="loading-screen">
-        <span className="brand-mark">E</span>
-        <p>Opening Engineering OS…</p>
+        <span className="brand-mark">S</span>
+        <p>Opening Suralta…</p>
       </main>
     );
   if (!user || recovery)
@@ -599,7 +596,7 @@ export default function Workspace() {
       </a>
       <aside className="sidebar">
         <div className="brand">
-          <span className="brand-mark">E</span>Engineering OS
+          <span className="brand-mark">S</span>Suralta
         </div>
         <nav aria-label="Main navigation">
           {destinations
@@ -645,13 +642,23 @@ export default function Workspace() {
           <button className="text-button" onClick={() => go("Semesters")}>
             Manage semesters
           </button>
+          <button
+            className="text-button"
+            onClick={() => setEditingProfile(true)}
+          >
+            Edit profile
+          </button>
           <div className="profile">
             <span className="avatar">
               {displayName.slice(0, 2).toUpperCase()}
             </span>
             <div>
               <strong>{displayName}</strong>
-              <small className="muted">NUM · Engineering</small>
+              <small className="muted">
+                {[user.user_metadata?.university, user.user_metadata?.major]
+                  .filter(Boolean)
+                  .join(" · ") || "Your student workspace"}
+              </small>
             </div>
           </div>
           <button
@@ -668,7 +675,7 @@ export default function Workspace() {
         </div>
       </aside>
       <div className="mobile-top">
-        <span className="brand">Engineering OS</span>
+        <span className="brand">Suralta</span>
         <select
           aria-label="Current semester"
           value={semesterId}
@@ -704,6 +711,11 @@ export default function Workspace() {
             </p>
           </div>
           <div className="header-actions">
+            {semester && (view === "Classes" || view === "Timetable") && (
+              <button disabled={archived} onClick={() => setImporting(true)}>
+                Upload timetable
+              </button>
+            )}
             {view === "Today" ? (
               <button
                 onClick={() => setQuick(true)}
@@ -807,8 +819,8 @@ export default function Workspace() {
                       </h2>
                       <p className="muted">
                         {onboarding === 2
-                          ? "Import your 6 NUM courses and 13 meetings, or start with an empty timetable."
-                          : "Your schedule is editable. Monday and Saturday have no seeded classes."}
+                          ? "Upload your course list and timetable, or add courses yourself."
+                          : "Check your days and times. Your free days follow your own timetable."}
                       </p>
                     </div>
                     <div className="row-actions">
@@ -816,9 +828,9 @@ export default function Workspace() {
                         <button
                           className="primary"
                           disabled={busy}
-                          onClick={() => void importNum()}
+                          onClick={() => setImporting(true)}
                         >
-                          Import NUM courses + timetable
+                          Upload timetable
                         </button>
                       )}
                       {onboarding === 2 && (
@@ -1122,15 +1134,15 @@ export default function Workspace() {
                         ) : (
                           <Empty
                             title="No classes yet"
-                            description="Import the verified NUM schedule or add your own courses."
+                            description="Upload your timetable or add your own courses."
                             action={
                               <div className="row-actions">
                                 <button
                                   className="primary"
                                   disabled={busy || archived}
-                                  onClick={() => void importNum()}
+                                  onClick={() => setImporting(true)}
                                 >
-                                  Import NUM courses + timetable
+                                  Upload timetable
                                 </button>
                                 {addButton("courses")}
                               </div>
@@ -1767,7 +1779,7 @@ export default function Workspace() {
           </>
         )}
         <footer className="workspace-footer">
-          <span>Engineering OS</span>
+          <span>Suralta</span>
           <span>
             {loading ? "Syncing…" : "Times in Asia/Ulaanbaatar"} ·{" "}
             <button
@@ -1803,6 +1815,31 @@ export default function Workspace() {
         <div className="toast" role="status">
           ✓ {toast}
         </div>
+      )}
+      {importing && (
+        <TimetableImport
+          semesterId={semesterId}
+          courses={courses}
+          meetings={meetings}
+          onClose={() => setImporting(false)}
+          onSaved={async () => {
+            setImporting(false);
+            setOnboarding(3);
+            await refresh();
+            setToast("Your courses and timetable were imported");
+          }}
+        />
+      )}
+      {editingProfile && (
+        <ProfileEditor
+          user={user}
+          onClose={() => setEditingProfile(false)}
+          onSaved={(u) => {
+            setUser(u);
+            setEditingProfile(false);
+            setToast("Profile saved");
+          }}
+        />
       )}
       {editor && (
         <Editor
@@ -1883,6 +1920,14 @@ export default function Workspace() {
       )}
       {more && (
         <Modal title="More" onClose={() => setMore(false)}>
+          <button
+            onClick={() => {
+              setMore(false);
+              setEditingProfile(true);
+            }}
+          >
+            Edit profile
+          </button>
           <div className="quick-grid">
             {(
               [

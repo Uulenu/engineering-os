@@ -1,38 +1,55 @@
-# Engineering OS
+# Suralta
 
-A Next.js App Router + Tailwind + Supabase university workspace built from [the Engineering OS Figma](https://www.figma.com/design/LHiWzaQVVsoC7spijl8k7X).
+A responsive student workspace for any university or major, built with Next.js App Router, Tailwind and Supabase. [Live app](https://suralta.vercel.app) · [Figma](https://www.figma.com/design/LHiWzaQVVsoC7spijl8k7X)
 
-## Local development
+## Current launch status
 
-Requires Node.js 22+ and npm. The current deployment has public Supabase defaults in `src/lib/public-config.ts`; these are browser-visible settings, not administrative credentials. Copy `.env.example` to `.env.local`, set the Supabase URL and publishable key, then run `npm ci`, `npm run dev`.
+The homepage, login/signup, academic workspace and reviewed timetable imports are implemented. Public email signup and password recovery still require a custom SMTP provider and verified sending domain. Supabase's default mail service only delivers to authorized organization members. Keep email confirmation enabled. Existing confirmed accounts can sign in.
 
-`npm run build` checks the production build. `npm run lint` checks the source. `npm run test:unit` verifies date boundaries, timetable warnings and planning. Browser tests use two disposable accounts supplied in `../work/verification/accounts.json` (never commit credentials). `npm run test:e2e` runs against localhost; set `TEST_URL` to test a deployment. Tests use the installed Chrome browser. The end-to-end test clears only the first QA account's semesters; never use a real user's credentials.
+## Development
 
-## Data and setup
+Requires Node.js 22+ and npm. Copy `.env.example` to `.env.local` for another Supabase project, then run `npm ci` and `npm run dev`. The deployed project's URL and publishable key in `src/lib/public-config.ts` are intentionally browser-visible public settings, never administrative credentials.
 
-Supabase project: `ugfnhcnplyfkxfbkemui`. `supabase/schema.sql` is the initial schema applied as `engineering_os_initial`. All tables enable RLS. Owner IDs and semester IDs are included in composite foreign keys; a user cannot link their data to another user's courses or semesters. Database constraints enforce valid dates, times, priorities and GPA ranges. RPC functions run as the caller, not as a privileged owner.
+Validation: `npm run build`, `npm run lint`, `npm run test:unit`, `npm run test:e2e`. Browser tests use two disposable accounts in `../work/verification/accounts.json`, outside Git. Never put real-user credentials there: the main test clears the first QA account's semesters. Set `TEST_URL` to test a deployment. Chrome must be installed.
 
-Sign up, confirm your email, create a semester, and choose **Import NUM courses + timetable**. This atomically imports six 3-credit courses and 13 meetings. Monday, Saturday and Sunday start without classes. Each meeting is editable data. Assignments, exams, projects and academic metrics start empty. Semester dates are optional because they were not provided.
+## Routes and account profile
 
-The seed comes from Figma's corrected Timetable frame `3:260`; older Classes summary labels incorrectly mention Saturday and are intentionally not copied. Priorities: EENG202 Electronics, MATH101 Calculus, PHYS101 Physics, then Python and the remaining subjects.
+- `/`: public homepage with a scroll walkthrough, responsive previews and reduced-motion support.
+- `/signup`, `/login`: Supabase authentication; name, school, major and optional study year on signup.
+- `/app`: signed-in academic workspace and editable profile.
+- `/auth/callback`: email confirmation/password-recovery callback.
+- `/privacy`: data handling and current deletion limitations.
 
-## Authentication
+The university selector includes eight Mongolian institutions with source URLs in `src/lib/universities.ts`. It is not an exhaustive registry: users may type any other school. Profile metadata is used for display only, never authorization.
 
-Email/password auth uses Supabase, with PKCE confirmation and password-recovery callbacks. Configure Site URL to the production origin and allow `<origin>/auth/callback` plus `<origin>/auth/callback?next=recovery`. The browser refreshes sessions through `@supabase/ssr`; every data request is authorized by Supabase RLS. There is no privileged database key in the app.
+## Importing a student's own timetable
 
-Supabase's built-in email provider is rate-limited and restricts recipients. A custom SMTP provider is required for unrestricted public signups. The user's own organization email can be used with the default provider. Do not disable email confirmation as a workaround.
+Create a semester, then choose **Import your timetable**. Photos (PNG/JPG/WebP), PDFs, CSV and XLSX are read in the browser. OCR uses locally served English and Mongolian models. Original files are not uploaded or stored; only reviewed course/meeting fields are sent to Supabase.
 
-## Product behavior
+Every import has an editable review stage and explicit confirmation. Missing or uncertain fields remain blank. OCR handles text extraction, not universal timetable layout recognition: complex grids may need substantial correction or manual rows. The CSV template provides a reliable structured format. Course names/credits from separate files fill blank values only when matching course codes agree. Shared course field edits apply to all its meetings.
 
-- Responsive Today, Classes, Timetable, Assignments, Exams, Study, Projects, Progress and Semesters.
-- All date calculations use Asia/Ulaanbaatar; recurring classes obey semester date boundaries.
-- Full CRUD, required fields, end-after-start validation, delete confirmation, duplicate prevention, explicit conflict overrides, and visible sync/error feedback.
-- Course + multiple weekly meetings save atomically. Drag a timetable block to another day to open a reviewable edit; time and room are set in that editor.
-- Overdue work remains until completed. Past exams display in the archive filter. Manual GPA and attendance are optional and never inferred.
-- Archived semesters are read-only until reactivated. Deleting a semester or course cascades to linked records, as the confirmation dialog explains.
-- The hybrid planner is deterministic scheduling, not a generative AI service. It ranks priorities and deadlines, finds free time from 10:00–20:00 for the next seven days, reserves exam preparation time, and gives longer blocks on class-free Mondays and Saturdays. Accept, edit, move, skip or complete sessions. Regeneration replaces only unaccepted suggestions; it preserves other sessions.
-- If a deadline or timetable changes, use Regenerate plan to recalculate suggestions.
+Limits: 10 MB per file, five selected files at once, eight PDF pages, ten workbook sheets, 500 review rows, 100 courses and 50 meetings per course per save. Imports are one transaction, so failures leave no partial records. Conflicts require confirmation; exact duplicates and existing course codes are rejected. Edit an existing course separately.
 
-## Design
+The personal NUM preset was retired by migration. Existing student records were preserved. No student receives another person's semester automatically.
 
-Desktop sidebar 248px; content padding 44px; system SF Pro font stack; 16px cards; Figma neutral surfaces and blue accent. Exported Figma navigation assets are committed locally. Secondary text and colored timetable labels use darker foregrounds for readable contrast. Mobile has a bottom navigation, single-day timetable tabs and full-screen forms. The seventh day is included so future Sunday classes can be edited without disappearing.
+## Academic behavior
+
+Responsive Today, Classes, Timetable, Assignments, Exams, Study, Projects, Progress and Semesters have CRUD, validation, delete confirmation and feedback. Courses support multiple weekly meetings. Timetable drag-to-day opens a reviewable editor. Optional manual GPA and attendance are never inferred. Archived semesters are read-only until reactivated; deletion explains cascading linked records.
+
+Dates use Asia/Ulaanbaatar. Recurring classes respect optional semester boundaries. Overdue assignments remain visible until completed; past exams have an archive filter. The planner ranks course priorities and deadlines, finds available time from 10:00–20:00 over the next seven days, and suggests longer sessions on any day without classes. Accept, edit, move, skip, regenerate or complete sessions. Regeneration preserves accepted and manual sessions. This is a deterministic planner, not generative AI. Regenerate when deadlines or the timetable change.
+
+## Database and security
+
+Supabase project `ugfnhcnplyfkxfbkemui`. Apply the complete ordered `supabase/migrations` history for a fresh database; `supabase/schema.sql` is only the original baseline. The latest migration removes the personal seed RPC and adds atomic `import_timetable`.
+
+All eight academic tables enforce owner RLS for reads and writes. Composite ownership/semester foreign keys prevent linking to another student's records. All public application RPCs run as the caller with SECURITY INVOKER. Database constraints enforce required values and ranges. Profiles use Supabase Auth user metadata. Password hashing and sessions are handled by Supabase Auth; application tables never hold passwords.
+
+Only the public publishable key reaches the browser. Environment files are ignored; QA credentials and generated verification output stay outside the repository. CSP, frame protection, content-type and referrer headers are set in `next.config.ts`; local OCR explicitly needs WebAssembly and worker permissions. CSP permits Next.js inline hydration scripts and is not a nonce-based strict policy.
+
+Supabase Site URL must be the public deployment origin. Allow `<origin>/auth/callback` and `<origin>/auth/callback?next=recovery`. Configure custom SMTP for public signup/reset delivery. Compromised-password screening remains unavailable on the current free plan; do not claim it is enabled. Account deletion is not self-service yet and is stated on the privacy page.
+
+## Design and third-party assets
+
+Figma contains the original academic workspace plus Suralta desktop/mobile login, signup and homepage designs. The homepage uses original product illustrations and scroll behavior inspired by the supplied b-egg.farm reference. It does not reuse that site's images. Reduced motion shows all walkthrough stages without sticky animation.
+
+OCR, language data and PDF workers are served locally for privacy and reliability. License notices live alongside the public assets. These assets are lazy-loaded only when an import requires them.

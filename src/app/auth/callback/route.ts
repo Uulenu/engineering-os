@@ -5,7 +5,7 @@ export async function GET(request: NextRequest) {
   const url = new URL(request.url);
   const code = url.searchParams.get("code");
   const destination =
-    url.searchParams.get("next") === "recovery" ? "/?recovery=1" : "/";
+    url.searchParams.get("next") === "recovery" ? "/app?recovery=1" : "/app";
   const response = NextResponse.redirect(new URL(destination, url.origin));
   response.headers.set("Cache-Control", "private, no-store");
   if (code) {
@@ -21,5 +21,5 @@ export async function GET(request: NextRequest) {
     const { error } = await supabase.auth.exchangeCodeForSession(code);
     if (!error) return response;
   }
-  return NextResponse.redirect(new URL("/?auth_error=1", url.origin));
+  return NextResponse.redirect(new URL("/app?auth_error=1", url.origin));
 }

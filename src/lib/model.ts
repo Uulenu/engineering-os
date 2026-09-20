@@ -172,8 +172,8 @@ export function suggestions(
         )
         .map((e) => [minutes(e.time) - 30, minutes(e.time) + 120]),
     ];
-    const duration = daily.length ? 60 : day === 1 || day === 6 ? 120 : 90;
-    let start = day === 6 ? 630 : 600;
+    const duration = daily.length ? 60 : 120;
+    let start = 600;
     if (offset === 0)
       start = Math.max(start, Math.ceil((minutes(now.time) + 15) / 10) * 10);
     while (

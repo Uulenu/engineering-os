@@ -66,8 +66,8 @@ test("planner uses free days, priority and deadlines without overlaps", () => {
     day: 6,
   });
   assert.equal(plans[0].course_id, "electronics");
-  assert.equal(plans[0].start_time, "10:30");
-  assert.equal(plans[0].end_time, "12:30");
+  assert.equal(plans[0].start_time, "10:00");
+  assert.equal(plans[0].end_time, "12:00");
   assert.ok(
     plans.every(
       (s) =>

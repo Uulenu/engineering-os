@@ -1,17 +1,29 @@
 "use client";
+import Link from "next/link";
 import { useState } from "react";
+import ProfileFields from "./profile-fields";
+import { StudentProfile, profileError } from "@/lib/universities";
 import { db } from "@/lib/supabase";
 export default function Auth({
   recovery = false,
+  initialMode = "signin",
   onRecovered,
 }: {
   recovery?: boolean;
+  initialMode?: "signin" | "signup";
   onRecovered?: () => void;
 }) {
-  const [mode, setMode] = useState(recovery ? "update" : "signin");
+  const [mode, setMode] = useState(
+    recovery ? "update" : (initialMode as string),
+  );
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [name, setName] = useState("");
+  const [profile, setProfile] = useState<StudentProfile>({
+    display_name: "",
+    university: "",
+    major: "",
+    study_year: "",
+  });
   const [message, setMessage] = useState("");
   const [error, setError] = useState("");
   const [busy, setBusy] = useState(false);
@@ -30,11 +42,15 @@ export default function Auth({
         });
         if (error) throw error;
       } else if (mode === "signup") {
+        const invalid = profileError(profile);
+        if (invalid) throw new Error(invalid);
         const { data, error } = await client.auth.signUp({
           email,
           password,
           options: {
-            data: { display_name: name.trim() },
+            data: Object.fromEntries(
+              Object.entries(profile).map(([k, v]) => [k, v.trim()]),
+            ),
             emailRedirectTo: redirect,
           },
         });
@@ -73,26 +89,26 @@ export default function Auth({
   return (
     <main className="auth-layout">
       <section className="auth-intro">
-        <div className="brand">
-          <span className="brand-mark">E</span>Engineering OS
-        </div>
+        <Link href="/" className="brand">
+          <span className="brand-mark">S</span>Suralta
+        </Link>
         <h1>
-          Your university
+          Your semester.
           <br />
-          command center
+          Your own rhythm.
         </h1>
         <p>
           Sign in to sync your timetable, assignments, exams, study plan,
           projects, and progress across devices.
         </p>
         <div className="auth-note">
-          <span className="eyebrow">BUILT AROUND YOUR WEEK</span>
+          <span className="eyebrow">A LITTLE CLARITY, EVERY DAY</span>
           <p>
             Know what’s next.
             <br />
             Make room for what matters.
           </p>
-          <span className="muted">NUM · Engineering</span>
+          <span className="muted">Every school. Every major.</span>
         </div>
       </section>
       <section className="auth-form">
@@ -106,16 +122,7 @@ export default function Auth({
                 : "Keep your account secure."}
           </p>
           {mode === "signup" && (
-            <label>
-              Your name
-              <input
-                autoComplete="name"
-                required
-                maxLength={80}
-                value={name}
-                onChange={(e) => setName(e.target.value)}
-              />
-            </label>
+            <ProfileFields value={profile} onChange={setProfile} />
           )}
           {mode !== "update" && (
             <label>

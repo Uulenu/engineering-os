@@ -1,6 +1,6 @@
 # Suralda
 
-A responsive student workspace for any university or major, built with Next.js App Router, Tailwind and Supabase. [Live app](https://suralta.vercel.app) · [Figma](https://www.figma.com/design/LHiWzaQVVsoC7spijl8k7X)
+A responsive student workspace for any university or major, built with Next.js App Router, Tailwind and Supabase. [Live app](https://suralda.vercel.app) · [Figma](https://www.figma.com/design/LHiWzaQVVsoC7spijl8k7X)
 
 ## Current launch status
 

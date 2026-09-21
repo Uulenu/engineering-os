@@ -1,4 +1,4 @@
-# Suralta
+# Suralda
 
 A responsive student workspace for any university or major, built with Next.js App Router, Tailwind and Supabase. [Live app](https://suralta.vercel.app) · [Figma](https://www.figma.com/design/LHiWzaQVVsoC7spijl8k7X)
 
@@ -50,6 +50,6 @@ Supabase Site URL must be the public deployment origin. Allow `<origin>/auth/cal
 
 ## Design and third-party assets
 
-Figma contains the original academic workspace plus Suralta desktop/mobile login, signup and homepage designs. The homepage uses original product illustrations and scroll behavior inspired by the supplied b-egg.farm reference. It does not reuse that site's images. Reduced motion shows all walkthrough stages without sticky animation.
+Figma contains the original academic workspace plus Suralda desktop/mobile login, signup and homepage designs. The homepage uses original product illustrations and scroll behavior inspired by the supplied b-egg.farm reference. It does not reuse that site's images. Reduced motion shows all walkthrough stages without sticky animation.
 
 OCR, language data and PDF workers are served locally for privacy and reliability. License notices live alongside the public assets. These assets are lazy-loaded only when an import requires them.

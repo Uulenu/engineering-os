@@ -2,8 +2,8 @@ import Link from "next/link";
 export default function Privacy() {
   return (
     <main className="privacy-page">
-      <Link href="/">← Suralta</Link>
-      <h1>Your data in Suralta</h1>
+      <Link href="/">← Suralda</Link>
+      <h1>Your data in Suralda</h1>
       <p>Updated September 19, 2026</p>
       <h2>What is stored</h2>
       <p>

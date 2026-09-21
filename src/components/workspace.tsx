@@ -559,7 +559,7 @@ export default function Workspace() {
     return (
       <main className="loading-screen">
         <span className="brand-mark" aria-hidden="true" />
-        <p>Opening Suralta…</p>
+        <p>Opening Suralda…</p>
       </main>
     );
   if (!user || recovery)
@@ -596,7 +596,7 @@ export default function Workspace() {
       </a>
       <aside className="sidebar">
         <div className="brand">
-          <span className="brand-mark" aria-hidden="true" />Suralta
+          <span className="brand-mark" aria-hidden="true" />Suralda
         </div>
         <nav aria-label="Main navigation">
           {destinations
@@ -675,7 +675,7 @@ export default function Workspace() {
         </div>
       </aside>
       <div className="mobile-top">
-        <span className="brand">Suralta</span>
+        <span className="brand">Suralda</span>
         <select
           aria-label="Current semester"
           value={semesterId}
@@ -1779,7 +1779,7 @@ export default function Workspace() {
           </>
         )}
         <footer className="workspace-footer">
-          <span>Suralta</span>
+          <span>Suralda</span>
           <span>
             {loading ? "Syncing…" : "Times in Asia/Ulaanbaatar"} ·{" "}
             <button

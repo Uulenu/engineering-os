@@ -72,8 +72,8 @@ export default function Landing() {
         Skip to content
       </a>
       <header className="landing-nav">
-        <Link href="/" className="landing-logo" aria-label="Suralta home">
-          <span aria-hidden="true">✳</span> Suralta
+        <Link href="/" className="landing-logo" aria-label="Suralda home">
+          <span aria-hidden="true">✳</span> Suralda
         </Link>
         <nav aria-label="Website navigation">
           <a href="#how-it-works">How it works</a>
@@ -123,7 +123,7 @@ export default function Landing() {
           </div>
           <div className="scene-card schedule-preview">
             <div className="preview-top">
-              <span>✳ Suralta</span>
+              <span>✳ Suralda</span>
               <span>YOUR WEEK</span>
             </div>
             <p className="demo-label">EXAMPLE WORKSPACE</p>
@@ -328,7 +328,7 @@ export default function Landing() {
           <details>
             <summary>Is this only for engineers?</summary>
             <p>
-              No. Suralta is for any major. Your school, courses, priorities and
+              No. Suralda is for any major. Your school, courses, priorities and
               free days are yours to choose.
             </p>
           </details>
@@ -346,14 +346,14 @@ export default function Landing() {
               Email delivery is currently limited by the configured Supabase
               sender. Public email delivery is being configured. If signup
               returns an email error, do not keep retrying; your school does not
-              need to be on the university list to use Suralta.
+              need to be on the university list to use Suralda.
             </p>
           </details>
         </div>
       </section>
       <footer className="landing-footer">
         <Link href="/" className="landing-logo">
-          ✳ Suralta
+          ✳ Suralda
         </Link>
         <p>A little clarity. A lot of possibility.</p>
         <Link href="/login">Open your workspace ↗</Link>
